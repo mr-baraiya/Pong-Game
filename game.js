@@ -1,4 +1,4 @@
-// --- Overlay, Difficulty, Pause, Victory, Home, Back, and High Score Logic ---
+// --- Overlay, Difficulty, Pause, Victory, Home, and High Score Logic ---
 const overlay = document.getElementById('overlay');
 const screens = Array.from(document.querySelectorAll('.screen'));
 let currentScreen = 0;
@@ -181,11 +181,12 @@ const canvas = document.getElementById('pong');
 const ctx = canvas.getContext('2d');
 const scoreAnimate = document.getElementById('score-animate');
 
-const paddleWidth = 28, paddleHeight = 144;
+const paddleWidth = 28, paddleHeightDefault = 144;
 const ballRadius = 19;
-const canvasWidth = canvas.width, canvasHeight = canvas.height;
+let canvasWidth = canvas.width, canvasHeight = canvas.height;
 
 // State
+let paddleHeight = paddleHeightDefault;
 let playerY = (canvasHeight - paddleHeight) / 2;
 let aiY = (canvasHeight - paddleHeight) / 2;
 let ballX = canvasWidth / 2, ballY = canvasHeight / 2;
@@ -349,6 +350,27 @@ function resetBall(who = null) {
     if (who) animateScore(who);
 }
 
+// --- Responsive Canvas ---
+function resizeCanvas() {
+    // Responsive canvas
+    let w = Math.min(window.innerWidth * 0.98, 960);
+    let h = Math.min(window.innerHeight * 0.7, 600);
+    canvas.width = w;
+    canvas.height = h;
+    canvasWidth = w;
+    canvasHeight = h;
+    paddleHeight = Math.max(60, Math.min(h * 0.24, paddleHeightDefault));
+
+    // Clamp paddles
+    playerY = Math.max(0, Math.min(canvasHeight - paddleHeight, playerY));
+    aiY = Math.max(0, Math.min(canvasHeight - paddleHeight, aiY));
+    // Clamp ball
+    ballX = Math.max(ballRadius, Math.min(canvasWidth - ballRadius, ballX));
+    ballY = Math.max(ballRadius, Math.min(canvasHeight - ballRadius, ballY));
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
 // Mouse control (mouse anywhere on window, paddle "sticks" to nearest edge)
 window.addEventListener('mousemove', function(event) {
     if(!playing || matchOver || paused) return;
@@ -365,6 +387,36 @@ window.addEventListener('mousemove', function(event) {
     if (playerY < 0) playerY = 0;
     if (playerY > canvasHeight - paddleHeight) playerY = canvasHeight - paddleHeight;
 });
+
+// --- MOBILE CONTROLS ---
+const btnUp = document.getElementById('btn-up');
+const btnDown = document.getElementById('btn-down');
+let mobileMoveInterval = null;
+
+function movePlayer(amount) {
+    if (!playing || matchOver || paused) return;
+    playerY += amount;
+    playerY = Math.max(0, Math.min(canvasHeight - paddleHeight, playerY));
+}
+
+function handleMobileMove(amount) {
+    movePlayer(amount);
+    clearInterval(mobileMoveInterval);
+    mobileMoveInterval = setInterval(() => movePlayer(amount), 60);
+}
+function stopMobileMove() {
+    clearInterval(mobileMoveInterval);
+}
+if(btnUp && btnDown) {
+    btnUp.addEventListener('touchstart', () => handleMobileMove(-30));
+    btnDown.addEventListener('touchstart', () => handleMobileMove(30));
+    btnUp.addEventListener('mousedown', () => handleMobileMove(-30));
+    btnDown.addEventListener('mousedown', () => handleMobileMove(30));
+    btnUp.addEventListener('touchend', stopMobileMove);
+    btnDown.addEventListener('touchend', stopMobileMove);
+    btnUp.addEventListener('mouseup', stopMobileMove);
+    btnDown.addEventListener('mouseup', stopMobileMove);
+}
 
 // Impossible AI toggle: press "I"
 window.addEventListener('keydown', function(e) {
