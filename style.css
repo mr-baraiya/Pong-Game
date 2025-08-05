@@ -157,6 +157,42 @@ body {
     background: #ffb700;
     color: #191720;
 }
+
+/* --- Mobile Controls --- */
+.mobile-controls {
+    display: none;
+    width: 100vw;
+    justify-content: center;
+    gap: 6vw;
+    position: absolute;
+    bottom: 10vw;
+    left: 0;
+    z-index: 12;
+}
+.mobile-controls button {
+    font-size: 9vw;
+    padding: 2vw 7vw;
+    border-radius: 18px;
+    background: #ffb700;
+    color: #191720;
+    border: none;
+    box-shadow: 0 0 22px #e8411880;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s, transform 0.12s;
+    font-family: 'Goldman', 'Bebas Neue', Arial, sans-serif;
+}
+.mobile-controls button:active {
+    background: #e84118;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+@media (max-width: 700px) {
+    .mobile-controls {
+        display: flex;
+    }
+}
+
 @media (max-width: 600px) {
     .screen {
         padding: 10vw 2vw 6vw 2vw;
